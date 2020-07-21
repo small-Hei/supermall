@@ -8,3 +8,23 @@ new Vue({
   render: h => h(App),
   router,
 }).$mount('#app')
+
+
+{/* <template>
+   
+   </template>
+   
+   <script >
+   
+   
+   export default {
+       name:'',
+       props: {
+       },
+   }
+   </script>
+   
+   <style scoped>
+       
+   
+   </style> */}

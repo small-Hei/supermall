@@ -12,7 +12,7 @@
        props: {
            titles: {
                 type: Array,
-                dafault () {
+                dafault() {
                     return []
                 }
            }

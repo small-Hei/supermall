@@ -46,6 +46,7 @@ export default {
         BetterScroll,
         BackTop
     },
+
     data() {
         return {
             banners:[],
@@ -58,7 +59,8 @@ export default {
             currentType: POP,
             isShowBackTop: false,
             taboffsetTop: 0,
-            showTabControl: false
+            showTabControl: false,
+            saveY: 0
         }
     },
     created() {
@@ -162,6 +164,16 @@ export default {
         showList () {
             return this.goods[this.currentType].list
         }
+    },
+    activated() {
+        this.$refs.betterscroll.scrollTo(0,this.saveY,0)
+        this.$refs.betterscroll.refresh()
+    },
+    deactivated() {
+        this.saveY = this.$refs.betterscroll.getScrollY()
+    },
+    destroyed() {
+        console.log('home destroyed')
     }
 }
 </script>

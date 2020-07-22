@@ -39,8 +39,4 @@ export function request(config){
 }
 
 
-// 如何使用拦截器？
-// axios提供了拦截器 用于我们在发送每次请求或者得到相应后 进行对应的处理
-// 四个拦截
-// request 成功(success)和失败(failure)的拦截
-// response 成功(success)和失败(failure)的拦截
+

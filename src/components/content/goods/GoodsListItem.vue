@@ -2,7 +2,7 @@
 <template>
    <div class="goods-item">
        <div>
-           <img :src="goodsItem.show.img" alt="" @load="imageLoad">
+           <img :src="goodsItem.show.img" alt="" @load="imageLoad" @click="itemClick">
            <div class="goods-info">
                 <p>{{goodsItem.title}}</p>
                 <span class="price">{{goodsItem.price}}</span>
@@ -24,6 +24,15 @@
            imageLoad(){
                 // 事件总线
                this.$bus.$emit('itemIamgeLoad')
+           },
+           itemClick() {
+               console.log(this.goodsItem.iid);
+               this.$router.push({
+                   path:'/detail',
+                   query: {
+                       iid: this.goodsItem.iid
+                   }
+               })
            }
        }
    }

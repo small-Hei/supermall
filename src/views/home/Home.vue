@@ -4,7 +4,7 @@
             <div slot="center">购物街</div>
         </nav-bar>
         <tab-control  class="tab-control" ref="topTab" v-show="showTabControl" @tabClick='tabClick' :titles="['流行','新款','精选']"/>
-        <better-scroll class="content" ref="betterscroll" :probeType="3" @scroll="contentScroll" :pullUpLoad = 'true' @pullingUp="loadMore">
+        <better-scroll class="content" ref="scroll" :probeType="3" @scroll="contentScroll" :pullUpLoad = 'true' @pullingUp="loadMore">
             <home-swiper :banners='banners' @imageLoaded="swiperImageLoad"/>
             <home-recommend-view :recommends='recommends'/>
             <home-feature-view/>
@@ -30,8 +30,9 @@ import BetterScroll from 'components/common/betterscroll/BetterScroll'
 import BackTop from 'components/content/backTop/BackTop'
 
 import {getHomeMultidata,getHomeGoods} from 'network/home'
-import {TOP_DISTANCE, POP, NEW, SELL} from "common/const";
-import {debounce} from 'common/utils'
+import {TOP_DISTANCE, POP, NEW, SELL,ITEMIMGLOAD} from "common/const";
+// import {debounce} from 'common/utils'
+import {itemListenerMixin} from 'common/mixin'
 
 export default {
     name:'Home',
@@ -46,7 +47,8 @@ export default {
         BetterScroll,
         BackTop
     },
-
+    //混入
+    mixins:[itemListenerMixin],
     data() {
         return {
             banners:[],
@@ -60,7 +62,9 @@ export default {
             isShowBackTop: false,
             taboffsetTop: 0,
             showTabControl: false,
-            saveY: 0
+            saveY: 0,
+            // itemImgListener: null
+
         }
     },
     created() {
@@ -73,17 +77,21 @@ export default {
 
     },
     mounted() {
-        //图片加载完成的事件监听
-        const refresh = debounce(this.$refs.betterscroll.refresh,200)
+        // //图片加载完成的事件监听
+        // const refresh = debounce(this.$refs.scroll.refresh,2000)
+        // // // 3.监听item中图片加载完成 重新设置滚动的范围
+        // // this.itemImgListener = ()=>{
+        // //     refresh() 
+        // // }
+        // // this.$bus.$on(ITEMIMGLOAD,this.itemImgListener)
+        // this.$bus.$on(ITEMIMGLOAD,()=>{
+        //     // 防抖函数（防止频繁调用） 对于refresh非常频繁的问题 进行防抖函数
+        //     // this.$refs.betterscroll.refresh()
 
-        // 3.监听item中图片加载完成 重新设置滚动的范围
-        this.$bus.$on('itemIamgeLoad',()=>{
-            // 防抖函数（防止频繁调用） 对于refresh非常频繁的问题 进行防抖函数
-            // this.$refs.betterscroll.refresh()
+        //     // 防抖debounce/节流throttle
+        //     refresh()   
+        // })
 
-            // 防抖debounce/节流throttle
-            refresh()   
-        })
 
         //2.获取tabControl的offsetTop 实现吸顶效果
         //所有的组件都有一个属性 $el: 用于获取组件中的元素
@@ -108,7 +116,7 @@ export default {
                 this.goods[type].list.push(...res.data.list)
                 this.goods[type].page += 1
                 // 完成上拉加载更多
-                this.$refs.betterscroll.finishPullUp()
+                this.$refs.scroll.finishPullUp()
             })
         },
 
@@ -137,7 +145,7 @@ export default {
          * 回到顶部
          */
         backTop() {
-            this.$refs.betterscroll.scrollTo(0,0)
+            this.$refs.scroll.scrollTo(0,0)
         },
         /**
          * 滚动监听 是否展示滑到顶部的按钮
@@ -166,11 +174,15 @@ export default {
         }
     },
     activated() {
-        this.$refs.betterscroll.scrollTo(0,this.saveY,0)
-        this.$refs.betterscroll.refresh()
+        this.$refs.scroll.scrollTo(0,this.saveY,0)
+        this.$refs.scroll.refresh()
     },
     deactivated() {
-        this.saveY = this.$refs.betterscroll.getScrollY()
+        // 1.保存Y值
+        this.saveY = this.$refs.scroll.getScrollY()
+        //2. 取消全局事件的监听 如果不传递 this.itemImgListener 所有的监听 ITEMIMGLOAD 都会被取消
+        this.$bus.$off(ITEMIMGLOAD, this.itemImgListener)
+
     },
     destroyed() {
         console.log('home destroyed')

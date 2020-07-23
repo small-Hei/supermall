@@ -2,7 +2,7 @@
 <template>
    <div class="goods-item">
        <div>
-           <img :src="goodsItem.show.img" alt="" @load="imageLoad" @click="itemClick">
+           <img :src="showImage" alt="" @load="imageLoad" @click="itemClick">
            <div class="goods-info">
                 <p>{{goodsItem.title}}</p>
                 <span class="price">{{goodsItem.price}}</span>
@@ -13,6 +13,7 @@
 </template> 
    
 <script >
+import {ITEMIMGLOAD} from "common/const";
    export default {
        name:'GoodsListItem',
        props: {
@@ -20,10 +21,24 @@
                type: Object,
            }
        },
+       computed:{
+           showImage() {
+               
+               return this.goodsItem.image || this.goodsItem.show.img
+           }
+       },
        methods: {
            imageLoad(){
                 // 事件总线
-               this.$bus.$emit('itemIamgeLoad')
+               this.$bus.$emit(ITEMIMGLOAD)
+               // 因为详情和首页都使用要区分
+               // 方法一 监听不同的方法
+
+                // if(this.$route.path.indexof('/home')){
+                //     this.$bus.$emit('homeItemIamgeLoad')
+                // }else if(this.$route.path.indexof('/detail')){
+                //     this.$bus.$emit('detailItemIamgeLoad')
+                // }
            },
            itemClick() {
                console.log(this.goodsItem.iid);

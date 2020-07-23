@@ -7,6 +7,8 @@
         <detail-shop-info :shop="shop"></detail-shop-info>
         <detail-goods-info :detailInfo="detailInfo" @imageLoad="imageLoad"/>
         <detail-param-info :paramInfo="paramInfo" @imageLoad="imageLoad"/>
+        <detail-comment-info :commentInfo="commentInfo"/>
+        <goods-list :goodsList="recommendList"></goods-list>
 
     </better-scroll>
   </div>
@@ -19,10 +21,15 @@ import DetailBaseInfo from './childComps/DetailBaseInfo'
 import DetailShopInfo from './childComps/DetailShopInfo'
 import DetailGoodsInfo from './childComps/DetailGoodsInfo'
 import DetailParamInfo from './childComps/DetailParamInfo'
+import DetailCommentInfo from './childComps/DetailCommentInfo'
 
 import BetterScroll from 'components/common/betterscroll/BetterScroll'
+import GoodsList from 'components/content/goods/GoodsList'
 
-import {getDetail, Goods, Shop, GoodsParam} from 'network/detail'
+import {getDetail,getRecommend, Goods, Shop, GoodsParam} from 'network/detail'
+// import {debounce} from 'common/utils'
+import {itemListenerMixin} from 'common/mixin'
+import {ITEMIMGLOAD} from "common/const"
 
 export default {
   name: "Detail",
@@ -36,9 +43,12 @@ export default {
       DetailBaseInfo,
       DetailShopInfo,
       DetailGoodsInfo,
-      DetailParamInfo
+      DetailParamInfo,
+      DetailCommentInfo,
+      GoodsList
   },
-
+  //混入
+  mixins:[itemListenerMixin],
   data() {
     return {
       iid: '',
@@ -46,13 +56,15 @@ export default {
       goods: {},
       shop:{},
       detailInfo:{},
-      paramInfo:{}
+      paramInfo:{},
+      commentInfo:{},
+      recommendList:[],
+      // itemImgListener: null
     }
   },
   created() {
     this.iid = this.$route.query.iid
     getDetail(this.iid).then(res=>{
-      console.log(res);
       // 1.获取数据
       const data = res.result
       // 2.获取顶部轮播图
@@ -63,12 +75,44 @@ export default {
       this.shop = new Shop(data.shopInfo)
       // 5.获取商品详细信息
       this.detailInfo = data.detailInfo
-      // 6.
+      // 6.取出参数信息
       this.paramInfo = new GoodsParam(data.itemParams.info,data.itemParams.rule)
-
+      // 7.取出评论的信息
+      if(data.rate.cRate !==0){
+        this.commentInfo = data.rate.list[0]
+      }
     }).catch(err=>{
       console.log(err);
     })
+
+    getRecommend().then(res=> {
+      console.log("---------");
+      console.log(res);
+      this.recommendList = res.data.list
+    }).catch(err=>{
+
+    })
+  },
+  mounted() {
+    //图片加载完成的事件监听
+    // const refresh = debounce(this.$refs.scroll.refresh,200)
+    // // 3.监听item中图片加载完成 重新设置滚动的范围
+    // this.itemImgListener = ()=>{
+    //   refresh() 
+    // }
+    // this.$bus.$on(ITEMIMGLOAD,this.itemImgListener)
+  },
+  //组件没有 keep-alive 此两个方法不会执行
+  // activated() {
+ 
+  // },
+  // deactivated() {
+      
+  // },
+
+  //销毁调用
+  destroyed(){
+    this.$bus.$off(ITEMIMGLOAD,this.itemImgListener)
   },
   methods: {
     imageLoad(){
